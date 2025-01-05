@@ -1,12 +1,12 @@
 from constraint import Problem
 from utils import load_all_data
 
-def solve_pc_configuration():
+def interactive_pc_builder_with_solver():
     """
-    Solves the PC configuration problem using python-constraint.
+    Interactive PC configurator using the constraint solver.
     """
     # Load data
-    data            = load_all_data()
+    data            = load_all_data() # Returns a dictionary of DataFrames
     cpus            = data["CPU"]
     motherboards    = data["Motherboard"]
     ram             = data["RAM"]
@@ -14,7 +14,7 @@ def solve_pc_configuration():
     psus            = data["PSU"]
     cases           = data["Case"]
 
-    # Create a constraint satisfaction problem instance
+    # Create a solver instance
     problem = Problem()
 
     # Add variables
@@ -62,32 +62,47 @@ def solve_pc_configuration():
     problem.addConstraint(psu_case_compatibility, ("PSU", "Case"))
     problem.addConstraint(gpu_psu_compatibility, ("GPU", "PSU"))
 
-    # Solve the problem
+    # Generate all initial solutions
     solutions = problem.getSolutions()
 
-   # Print valid solutions
-    if solutions:
-        print(f"\nFound {len(solutions)} solution(s):")
-        for idx, solution in enumerate(solutions):
-            # Retrieve components
-            cpu = cpus.loc[cpus["id"] == solution["CPU"]]
-            motherboard = motherboards.loc[motherboards["id"] == solution["Motherboard"]]
-            ram_component = ram.loc[ram["id"] == solution["RAM"]]
-            gpu = gpus.loc[gpus["id"] == solution["GPU"]]
-            psu = psus.loc[psus["id"] == solution["PSU"]]
-            case = cases.loc[cases["id"] == solution["Case"]]
+    # Start interactive process
+    print("\nWelcome to the Interactive PC Configurator! (Solver approach)")
+    remaining_solutions = solutions
 
-            # Print configuration details
-            print(f"\nConfiguration {idx+1}:")
-            print(f"CPU: {cpu['name'].values[0]} (Socket: {cpu['socket'].values[0]})")
-            print(f"Motherboard: {motherboard['name'].values[0]} (Size: {motherboard['size'].values[0]}, Socket: {motherboard['socket'].values[0]})")
-            print(f"RAM: {ram_component['name'].values[0]} (Type: {ram_component['ram_type'].values[0]}, Speed: {ram_component['speed'].values[0]})")
-            print(f"GPU: {gpu['name'].values[0]} (Power Draw: {gpu['power_draw'].values[0]})")
-            print(f"PSU: {psu['name'].values[0]} (Wattage: {psu['wattage'].values[0]}, Size: {psu['size'].values[0]})")
-            print(f"Case: {case['name'].values[0]} (Supports Motherboard: {case['supported_motherboard_sizes'].values[0]}, PSU: {case['supported_psu_sizes'].values[0]})")
-    else:
-        print("No solutions found.")
+    # Interactive steps
+    for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
+        while True:  # Loop until valid input is provided
+            # Display available options for the current component
+            available_ids = set(sol[component] for sol in remaining_solutions)
+            available_components = data[component].loc[data[component]["id"].isin(available_ids)]
 
+            print(f"\nChoose a {component}:")
+            for idx, row in available_components.iterrows():
+                print(f"{row['id']}: {row['name']} ({row['price']}€)")
+
+            # Get user choice
+            try:
+                user_choice = int(input("Enter your choice (ID): "))
+                if user_choice in available_ids:
+                    # Valid choice, break out of the loop
+                    remaining_solutions = [sol for sol in remaining_solutions if sol[component] == user_choice]
+                    break
+                else:
+                    print("Invalid ID. Please choose a valid option.")
+            except ValueError:
+                print("Invalid input. Please enter a numeric ID.")
+
+        # Check if there are still compatible solutions
+        if not remaining_solutions:
+            print(f"\nNo compatible solutions found after selecting {component}. Please restart.")
+            return
+
+    # Final configuration
+    print("\nYour final configuration:")
+    final_solution = remaining_solutions[0]  # There should only be one solution left
+    for component, component_id in final_solution.items():
+        component_name = data[component].loc[data[component]["id"] == component_id, "name"].values[0]
+        print(f"{component}: {component_name}")
 
 if __name__ == "__main__":
-    solve_pc_configuration()
+    interactive_pc_builder_with_solver()

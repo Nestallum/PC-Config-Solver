@@ -7,12 +7,12 @@ def load_all_data(data_dir="data/"):
     Returns a dictionary with the data.
     """
     files = {
-        "CPUs": "cpus.csv",
-        "Motherboards": "motherboards.csv",
+        "CPU": "cpus.csv",
+        "Motherboard": "motherboards.csv",
         "RAM": "ram.csv",
-        "GPUs": "gpus.csv",
-        "PSUs": "psus.csv",
-        "Cases": "cases.csv"
+        "GPU": "gpus.csv",
+        "PSU": "psus.csv",
+        "Case": "cases.csv"
     }
 
     data = {}
@@ -22,10 +22,9 @@ def load_all_data(data_dir="data/"):
 
     return data
 
-
-# Example usage
+# Printing DataFrames
 if __name__ == "__main__":    
-      # Load all data
+    # Load all data
     data = load_all_data()
 
     # Print data
