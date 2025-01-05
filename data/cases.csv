@@ -1,0 +1,5 @@
+id,name,type,supported_motherboard_sizes,supported_psu_sizes,price
+1,NZXT H510,ATX,"['ATX', 'Micro-ATX']","['ATX']",80
+2,Cooler Master NR200P,Mini-ITX,"['Mini-ITX']","['SFX', 'SFX-L']",100
+3,Fractal Design Meshify 2 XL,E-ATX,"['E-ATX', 'ATX']","['ATX']",150
+4,Lian Li Q58,Mini-ITX,"['Mini-ITX']","['SFX', 'SFX-L']",120

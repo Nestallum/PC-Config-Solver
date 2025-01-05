@@ -1,0 +1,4 @@
+id,name,socket,cores,tdp,price
+1,Intel i5-12400,LGA1700,6,65W,200
+2,AMD Ryzen 5 5600X,AM4,6,65W,230
+3,Intel i7-13700K,LGA1700,16,125W,400
