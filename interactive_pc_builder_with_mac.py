@@ -54,37 +54,41 @@ def interactive_pc_builder_with_mac():
         psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
         return gpu_power_draw * safety_margin <= psu_wattage
 
-    # Constraints propagation
     def propagate(domains):
-        for cpu in list(domains["CPU"]):
-            if not any(cpu_motherboard_compatibility(cpu, mb) for mb in domains["Motherboard"]):
-                domains["CPU"].remove(cpu)
+        """
+        "local" MAC approach : Reduces the domains of variables based on compatibility constraints.
+        This function follows a unidirectional approach, suitable for an interactive process where
+        user choices progressively fix variables.
+
+        Arguments:
+        domains -- a dictionary containing the possible domains for each component.
+        """
 
         for mb in list(domains["Motherboard"]):
+            # Remove the motherboard if it is not compatible with any remaining CPU
             if not any(cpu_motherboard_compatibility(cpu, mb) for cpu in domains["CPU"]):
-                domains["Motherboard"].remove(mb)
-            if not any(motherboard_ram_compatibility(mb, ram) for ram in domains["RAM"]):
-                domains["Motherboard"].remove(mb)
-            if not any(motherboard_case_compatibility(mb, case) for case in domains["Case"]):
                 domains["Motherboard"].remove(mb)
 
         for ram in list(domains["RAM"]):
+            # Remove the RAM if it is not compatible with any remaining motherboard
             if not any(motherboard_ram_compatibility(mb, ram) for mb in domains["Motherboard"]):
                 domains["RAM"].remove(ram)
 
         for case in list(domains["Case"]):
+            # Remove the case if it is not compatible with any remaining motherboard
             if not any(motherboard_case_compatibility(mb, case) for mb in domains["Motherboard"]):
                 domains["Case"].remove(case)
+            # Remove the case if it is not compatible with any remaining PSU
             if not any(psu_case_compatibility(psu, case) for psu in domains["PSU"]):
                 domains["Case"].remove(case)
 
         for psu in list(domains["PSU"]):
+            # Remove the PSU if it is not compatible with any remaining GPU
             if not any(gpu_psu_compatibility(gpu, psu) for gpu in domains["GPU"]):
                 domains["PSU"].remove(psu)
-
-        for gpu in list(domains["GPU"]):
-            if not any(gpu_psu_compatibility(gpu, psu) for psu in domains["PSU"]):
-                domains["GPU"].remove(gpu)
+            # Remove the PSU if it is not compatible with any remaining case
+            if not any(psu_case_compatibility(psu, case) for case in domains["Case"]):
+                domains["PSU"].remove(psu)
 
     # Start interactive process
     print("\nWelcome to the Interactive PC Configurator! (MAC approach)")

@@ -67,13 +67,13 @@ def interactive_pc_builder_with_solver():
 
     # Start interactive process
     print("\nWelcome to the Interactive PC Configurator! (Solver approach)")
-    remaining_solutions = solutions
+    remaining_solutions = solutions # List of solutions where each solution is a dictionary of composant IDs
 
     # Interactive steps
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
         while True:  # Loop until valid input is provided
             # Display available options for the current component
-            available_ids = set(sol[component] for sol in remaining_solutions)
+            available_ids = set(sol[component] for sol in remaining_solutions) # Extracts all valid IDs for the current component from the remaining solutions.
             available_components = data[component].loc[data[component]["id"].isin(available_ids)]
 
             print(f"\nChoose a {component}:")
@@ -85,7 +85,7 @@ def interactive_pc_builder_with_solver():
                 user_choice = int(input("Enter your choice (ID): "))
                 if user_choice in available_ids:
                     # Valid choice, break out of the loop
-                    remaining_solutions = [sol for sol in remaining_solutions if sol[component] == user_choice]
+                    remaining_solutions = [sol for sol in remaining_solutions if sol[component] == user_choice] # Update remaining solutions
                     break
                 else:
                     print("Invalid ID. Please choose a valid option.")
