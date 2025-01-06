@@ -77,6 +77,24 @@ def solve_pc_configuration():
             psu = psus.loc[psus["id"] == solution["PSU"]]
             case = cases.loc[cases["id"] == solution["Case"]]
 
+            # Retrieve components
+            cpu = cpus.loc[cpus["id"] == solution["CPU"]]
+            motherboard = motherboards.loc[motherboards["id"] == solution["Motherboard"]]
+            ram_component = ram.loc[ram["id"] == solution["RAM"]]
+            gpu = gpus.loc[gpus["id"] == solution["GPU"]]
+            psu = psus.loc[psus["id"] == solution["PSU"]]
+            case = cases.loc[cases["id"] == solution["Case"]]
+
+            # Calculate total price
+            total_price = (
+                cpu["price"].values[0]
+                + motherboard["price"].values[0]
+                + ram_component["price"].values[0]
+                + gpu["price"].values[0]
+                + psu["price"].values[0]
+                + case["price"].values[0]
+            )
+
             # Print configuration details
             print(f"\nConfiguration {idx+1}:")
             print(f"CPU: {cpu['name'].values[0]} (Socket: {cpu['socket'].values[0]})")
@@ -85,6 +103,7 @@ def solve_pc_configuration():
             print(f"GPU: {gpu['name'].values[0]} (Power Draw: {gpu['power_draw'].values[0]})")
             print(f"PSU: {psu['name'].values[0]} (Wattage: {psu['wattage'].values[0]}, Size: {psu['size'].values[0]})")
             print(f"Case: {case['name'].values[0]} (Supports Motherboard: {case['supported_motherboard_sizes'].values[0]}, PSU: {case['supported_psu_sizes'].values[0]})")
+            print(f"Total Price: {total_price}€")
     else:
         print("No solutions found.")
 
