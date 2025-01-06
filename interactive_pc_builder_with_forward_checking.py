@@ -54,7 +54,7 @@ def interactive_pc_builder_with_forward_checking():
         psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
         return gpu_power_draw * safety_margin <= psu_wattage
 
-    def forward_check_with_propagation(domains):
+    def forward_checking(domains):
         """
         Forward Checking: Reduces the domains of variables based on compatibility constraints.
         This function follows a unidirectional approach, suitable for an interactive process where
@@ -78,21 +78,18 @@ def interactive_pc_builder_with_forward_checking():
             # Remove the case if it is not compatible with any remaining motherboard
             if not any(motherboard_case_compatibility(mb, case) for mb in domains["Motherboard"]):
                 domains["Case"].remove(case)
-            # # Remove the case if it is not compatible with any remaining PSU
-            # if not any(psu_case_compatibility(psu, case) for psu in domains["PSU"]):
-            #     domains["Case"].remove(case)
 
         for psu in list(domains["PSU"]):
-            # Remove the PSU if it is not compatible with any remaining GPU
-            if not any(gpu_psu_compatibility(gpu, psu) for gpu in domains["GPU"]):
-                domains["PSU"].remove(psu)
             # Remove the PSU if it is not compatible with any remaining case
             if not any(psu_case_compatibility(psu, case) for case in domains["Case"]):
                 domains["PSU"].remove(psu)
+            # Remove the PSU if it is not compatible with any remaining GPU
+            if not any(gpu_psu_compatibility(gpu, psu) for gpu in domains["GPU"]):
+                domains["PSU"].remove(psu)
 
     # Start interactive process
-    print("\nWelcome to the Interactive PC Configurator! (Forward Checking with propagation)")
-    forward_check_with_propagation(domains)  # Initial propagation
+    print("\nWelcome to the Interactive PC Configurator! (Forward Checking)")
+    forward_checking(domains)  # Initial propagation
 
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
         while True:  # Loop until valid input is provided
@@ -108,7 +105,7 @@ def interactive_pc_builder_with_forward_checking():
                 if user_choice in domains[component]:
                     # Fix the user's choice and propagate constraints
                     domains[component] = {user_choice}
-                    forward_check_with_propagation(domains)
+                    forward_checking(domains)
                     break
                 else:
                     print("Invalid ID. Please choose a valid option.")
