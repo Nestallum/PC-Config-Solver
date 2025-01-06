@@ -108,7 +108,7 @@ def interactive_pc_builder_with_forward_checking():
                 if user_choice in domains[component]:
                     # Fix the user's choice and propagate constraints
                     domains[component] = {user_choice}
-                    forward_check(domains)
+                    forward_check_with_propagation(domains)
                     break
                 else:
                     print("Invalid ID. Please choose a valid option.")
