@@ -1,8 +1,8 @@
 from utils import load_all_data
 
-def interactive_pc_builder_with_mac():
+def interactive_pc_builder_with_forward_checking():
     """
-    Interactive PC configurator using MAC (Maintaining Arc Consistency).
+    Interactive PC configurator using Forward Checking.
     """
     # Load data
     data            = load_all_data() # Returns a dictionary of DataFrames
@@ -54,9 +54,9 @@ def interactive_pc_builder_with_mac():
         psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
         return gpu_power_draw * safety_margin <= psu_wattage
 
-    def propagate(domains):
+    def forward_check_with_propagation(domains):
         """
-        "local" MAC approach : Reduces the domains of variables based on compatibility constraints.
+        Forward Checking: Reduces the domains of variables based on compatibility constraints.
         This function follows a unidirectional approach, suitable for an interactive process where
         user choices progressively fix variables.
 
@@ -78,9 +78,9 @@ def interactive_pc_builder_with_mac():
             # Remove the case if it is not compatible with any remaining motherboard
             if not any(motherboard_case_compatibility(mb, case) for mb in domains["Motherboard"]):
                 domains["Case"].remove(case)
-            # Remove the case if it is not compatible with any remaining PSU
-            if not any(psu_case_compatibility(psu, case) for psu in domains["PSU"]):
-                domains["Case"].remove(case)
+            # # Remove the case if it is not compatible with any remaining PSU
+            # if not any(psu_case_compatibility(psu, case) for psu in domains["PSU"]):
+            #     domains["Case"].remove(case)
 
         for psu in list(domains["PSU"]):
             # Remove the PSU if it is not compatible with any remaining GPU
@@ -91,8 +91,8 @@ def interactive_pc_builder_with_mac():
                 domains["PSU"].remove(psu)
 
     # Start interactive process
-    print("\nWelcome to the Interactive PC Configurator! (MAC approach)")
-    propagate(domains)  # Initial propagation
+    print("\nWelcome to the Interactive PC Configurator! (Forward Checking with propagation)")
+    forward_check_with_propagation(domains)  # Initial propagation
 
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
         while True:  # Loop until valid input is provided
@@ -108,7 +108,7 @@ def interactive_pc_builder_with_mac():
                 if user_choice in domains[component]:
                     # Fix the user's choice and propagate constraints
                     domains[component] = {user_choice}
-                    propagate(domains)
+                    forward_check(domains)
                     break
                 else:
                     print("Invalid ID. Please choose a valid option.")
@@ -127,4 +127,4 @@ def interactive_pc_builder_with_mac():
         print(f"{component}: {component_name}")
 
 if __name__ == "__main__":
-    interactive_pc_builder_with_mac()
+    interactive_pc_builder_with_forward_checking()

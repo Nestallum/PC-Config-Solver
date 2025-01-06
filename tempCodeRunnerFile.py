@@ -1,1 +1,1 @@
-ons = problem.getSolutions()
+"CPU", 
