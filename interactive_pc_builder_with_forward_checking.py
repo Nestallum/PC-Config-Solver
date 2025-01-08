@@ -1,8 +1,8 @@
 from utils import load_all_data
 
-def interactive_pc_builder_with_forward_checking():
+def interactive_pc_builder():
     """
-    Interactive PC configurator using Forward Checking.
+    Interactive PC configurator using MAC approach.
     """
     # Load data
     data            = load_all_data() # Returns a dictionary of DataFrames
@@ -54,11 +54,13 @@ def interactive_pc_builder_with_forward_checking():
         psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
         return gpu_power_draw * safety_margin <= psu_wattage
 
-    def forward_checking(domains):
+    def propagate_constraints(domains):
         """
-        Forward Checking: Reduces the domains of variables based on compatibility constraints.
-        This function follows a unidirectional approach, suitable for an interactive process where
-        user choices progressively fix variables.
+        MAC (Maintaining Arc Consistency) Approach: Ensures that the domains of variables remain consistent 
+        by reducing them based on compatibility constraints. 
+
+        This function follows a unidirectional propagation approach, making it suitable for interactive processes 
+        where user choices progressively narrow down the possible solutions.
 
         Arguments:
         domains -- a dictionary containing the possible domains for each component.
@@ -88,8 +90,8 @@ def interactive_pc_builder_with_forward_checking():
                 domains["PSU"].remove(psu)
 
     # Start interactive process
-    print("\nWelcome to the Interactive PC Configurator! (Forward Checking)")
-    forward_checking(domains)  # Initial propagation
+    print("\nWelcome to the Interactive PC Configurator! (MAC approach)")
+    propagate_constraints(domains)  # Initial propagation
 
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
         while True:  # Loop until valid input is provided
@@ -105,7 +107,7 @@ def interactive_pc_builder_with_forward_checking():
                 if user_choice in domains[component]:
                     # Fix the user's choice and propagate constraints
                     domains[component] = {user_choice}
-                    forward_checking(domains)
+                    propagate_constraints(domains)
                     break
                 else:
                     print("Invalid ID. Please choose a valid option.")
@@ -124,4 +126,4 @@ def interactive_pc_builder_with_forward_checking():
         print(f"{component}: {component_name}")
 
 if __name__ == "__main__":
-    interactive_pc_builder_with_forward_checking()
+    interactive_pc_builder()
