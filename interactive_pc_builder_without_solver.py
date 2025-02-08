@@ -125,7 +125,7 @@ def interactive_pc_builder():
                 print(f"{row['id']}: {row['name']} ({row['price']}€)")
 
             try:
-                user_choice = int(input("✏️ Entrez votre choix (ID) : "))
+                user_choice = int(input("✏️  Entrez votre choix (ID) : "))
                 if user_choice in domains[component]:
                     selected_config[component] = user_choice
                     domains[component] = {user_choice}  # Fix the user's choice

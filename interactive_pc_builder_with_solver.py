@@ -111,9 +111,9 @@ def interactive_pc_builder_with_solver():
             if budget >= min_cost:
                 break
             else:
-                print(f"⚠️ Le budget doit être au moins de {min_cost}€. ")
+                print(f"⚠️  Le budget doit être au moins de {min_cost}€. ")
         except ValueError:
-            print("⚠️ Entrée invalide. Veuillez entrer un montant numérique.")
+            print("⚠️  Entrée invalide. Veuillez entrer un montant numérique.")
 
     # Ajout de la contrainte budgétaire
     def budget_constraint(cpu_id, motherboard_id, ram_id, gpu_id, psu_id, case_id):
@@ -162,14 +162,14 @@ def interactive_pc_builder_with_solver():
 
         while True:
             try:
-                user_choice = int(input("✏️ Entrez votre choix (ID) : "))
+                user_choice = int(input("✏️  Entrez votre choix (ID) : "))
                 if user_choice in available_options:
                     selected_config[component] = user_choice
                     break
                 else:
                     print("❌ ID invalide. Veuillez choisir une option valide.")
             except ValueError:
-                print("⚠️ Entrée invalide. Veuillez entrer un ID numérique.")
+                print("⚠️  Entrée invalide. Veuillez entrer un ID numérique.")
 
     print("\n✅ **Configuration finale :**")
     total_cost = sum(data[comp].loc[data[comp]["id"] == cid, "price"].values[0] for comp, cid in selected_config.items())
