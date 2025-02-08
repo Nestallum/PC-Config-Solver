@@ -1,0 +1,7 @@
+Component,id,name,capacity,cores,max_ram,power_draw,price,ram_type,size,socket,speed,supported_motherboard_sizes,supported_psu_sizes,tdp,type,wattage
+CPU,1,Intel i5-12400,N/A,6,N/A,N/A,200,N/A,N/A,LGA1700,N/A,N/A,N/A,65.0,N/A,N/A
+Motherboard,4,ASUS ROG Strix B760-I,N/A,N/A,64GB,N/A,250,DDR5,Mini-ITX,LGA1700,N/A,N/A,N/A,N/A,N/A,N/A
+RAM,4,G.Skill DDR5 16Go,,N/A,N/A,N/A,120,DDR5,N/A,N/A,,N/A,N/A,N/A,N/A,N/A
+GPU,5,AMD RX 6600,N/A,N/A,N/A,132,280,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+PSU,5,SilverStone SX700-LPT,N/A,N/A,N/A,N/A,160,N/A,SFX-L,N/A,N/A,N/A,N/A,N/A,N/A,700
+Case,2,Cooler Master NR200P,N/A,N/A,N/A,N/A,100,N/A,N/A,N/A,N/A,['Mini-ITX'],"['SFX', 'SFX-L']",N/A,Mini-ITX,N/A

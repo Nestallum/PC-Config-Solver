@@ -1,4 +1,4 @@
-from utils import load_all_data
+from utils import load_all_data, save_final_configuration
 
 def interactive_pc_builder():
     """
@@ -50,8 +50,8 @@ def interactive_pc_builder():
 
     # 5. PSU wattage must match GPU power draw
     def gpu_psu_compatibility(gpu_id, psu_id, safety_margin=1.2):
-        gpu_power_draw = int(gpus.loc[gpus["id"] == gpu_id, "power_draw"].values[0].replace("W", ""))
-        psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
+        gpu_power_draw = int(gpus.loc[gpus["id"] == gpu_id, "power_draw"].values[0])
+        psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0])
         return gpu_power_draw * safety_margin <= psu_wattage
 
     def propagate_constraints(domains):
@@ -90,40 +90,68 @@ def interactive_pc_builder():
                 domains["PSU"].remove(psu)
 
     # Start interactive process
-    print("\nWelcome to the Interactive PC Configurator! (MAC approach)")
+    print("\n🚀 Bienvenue dans le Configurateur de PC interactif ! (Approche MAC)")
     propagate_constraints(domains)  # Initial propagation
 
+    selected_config = {}
+
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
-        while True:  # Loop until valid input is provided
-            # Display available options for the current component
+        while True:
             available_components = data[component].loc[data[component]["id"].isin(domains[component])]
 
-            print(f"\nChoose a {component}:")
+            print(f"\n🛠️ **Sélection du composant : {component}**")
+
+            # Ajout des indications pour guider l'utilisateur
+            if component == "CPU":
+                print("💡 Choisissez un processeur.")
+            elif component == "Motherboard":
+                print(f"💡 La carte mère doit être compatible avec le socket du CPU sélectionné : "
+                      f"({cpus.loc[cpus['id'] == selected_config['CPU'], 'socket'].values[0]}).")
+            elif component == "RAM":
+                print(f"💡 La RAM doit être de type : "
+                      f"{motherboards.loc[motherboards['id'] == selected_config['Motherboard'], 'ram_type'].values[0]}.")
+            elif component == "GPU":
+                print("💡 Choisissez une carte graphique en fonction de vos besoins.")
+            elif component == "PSU":
+                print(f"💡 L'alimentation doit fournir au moins "
+                      f"{gpus.loc[gpus['id'] == selected_config['GPU'], 'power_draw'].values[0] * 1.2}W.")
+            elif component == "Case":
+                print(f"💡 Le boîtier doit supporter une carte mère de type : "
+                      f"{motherboards.loc[motherboards['id'] == selected_config['Motherboard'], 'size'].values[0]} "
+                      f"et une alimentation de taille : {psus.loc[psus['id'] == selected_config['PSU'], 'size'].values[0]}.")
+
+            print("\n📌 Options disponibles :")
             for idx, row in available_components.iterrows():
                 print(f"{row['id']}: {row['name']} ({row['price']}€)")
 
             try:
-                user_choice = int(input("Enter your choice (ID): "))
+                user_choice = int(input("✏️ Entrez votre choix (ID) : "))
                 if user_choice in domains[component]:
-                    # Fix the user's choice and propagate constraints
-                    domains[component] = {user_choice}
-                    propagate_constraints(domains)
+                    selected_config[component] = user_choice
+                    domains[component] = {user_choice}  # Fix the user's choice
+                    propagate_constraints(domains)  # Apply constraints
                     break
                 else:
-                    print("Invalid ID. Please choose a valid option.")
+                    print("❌ ID invalide. Veuillez choisir une option valide.")
             except ValueError:
-                print("Invalid input. Please enter a numeric ID.")
+                print("⚠️ Entrée invalide. Veuillez entrer un ID numérique.")
 
         # Check if any domain is empty
         if any(len(domain) == 0 for domain in domains.values()):
-            print(f"\nNo compatible solutions found after selecting {component}. Please restart.")
+            print(f"\n❌ Aucune solution compatible trouvée après la sélection de {component}. Veuillez recommencer.")
             return
 
     # Final configuration
-    print("\nYour final configuration:")
-    for component, ids in domains.items():
-        component_name = data[component].loc[data[component]["id"].isin(ids), "name"].values[0]
-        print(f"{component}: {component_name}")
+    print("\n✅ **Configuration finale :**")
+    total_cost = sum(data[comp].loc[data[comp]["id"] == cid, "price"].values[0] for comp, cid in selected_config.items())
+    for component, component_id in selected_config.items():
+        component_name = data[component].loc[data[component]["id"] == component_id, "name"].values[0]
+        component_price = data[component].loc[data[component]["id"] == component_id, "price"].values[0]
+        print(f"🔹 {component}: {component_name} ({component_price}€)")
+    print(f"💰 **Coût total : {total_cost}€**")
+
+    # Enregistrer la configuration dans un CSV
+    save_final_configuration(selected_config, data)
 
 if __name__ == "__main__":
     interactive_pc_builder()

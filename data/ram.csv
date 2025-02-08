@@ -2,3 +2,4 @@ id,name,ram_type,capacity,speed,price
 1,Corsair Vengeance,DDR4,16GB,3200MHz,80
 2,G.Skill Trident,DDR4,32GB,3600MHz,160
 3,Kingston Fury,DDR5,16GB,5200MHz,120
+4,G.Skill DDR5 16Go,DDR5,,,120

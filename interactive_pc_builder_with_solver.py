@@ -1,12 +1,14 @@
 from constraint import Problem
-from utils import load_all_data
+from utils import load_all_data, save_final_configuration
+import pandas as pd
 
 def interactive_pc_builder_with_solver():
     """
-    Interactive PC configurator using the constraint solver.
+    Interactive PC configurator using the constraint solver with enhanced display, budget constraint, 
+    and step-by-step guided selection.
     """
     # Load data
-    data = load_all_data()  # Returns a dictionary of DataFrames
+    data = load_all_data()
     cpus = data["CPU"]
     motherboards = data["Motherboard"]
     ram = data["RAM"]
@@ -14,7 +16,7 @@ def interactive_pc_builder_with_solver():
     psus = data["PSU"]
     cases = data["Case"]
 
-    # Create a solver instance
+    # Create the solver instance
     problem = Problem()
 
     # Add variables
@@ -27,29 +29,24 @@ def interactive_pc_builder_with_solver():
 
     # Add constraints
     def cpu_motherboard_compatibility(cpu_id, motherboard_id):
-        cpu_socket = cpus.loc[cpus["id"] == cpu_id, "socket"].values[0]
-        motherboard_socket = motherboards.loc[motherboards["id"] == motherboard_id, "socket"].values[0]
-        return cpu_socket == motherboard_socket
-
+        return cpus.loc[cpus["id"] == cpu_id, "socket"].values[0] == \
+               motherboards.loc[motherboards["id"] == motherboard_id, "socket"].values[0]
+    
     def motherboard_ram_compatibility(motherboard_id, ram_id):
-        motherboard_ram_type = motherboards.loc[motherboards["id"] == motherboard_id, "ram_type"].values[0]
-        ram_type = ram.loc[ram["id"] == ram_id, "ram_type"].values[0]
-        return motherboard_ram_type == ram_type
-
+        return motherboards.loc[motherboards["id"] == motherboard_id, "ram_type"].values[0] == \
+               ram.loc[ram["id"] == ram_id, "ram_type"].values[0]
+    
     def motherboard_case_compatibility(motherboard_id, case_id):
-        motherboard_size = motherboards.loc[motherboards["id"] == motherboard_id, "size"].values[0]
-        case_supported_sizes = eval(cases.loc[cases["id"] == case_id, "supported_motherboard_sizes"].values[0])
-        return motherboard_size in case_supported_sizes
-
+        return motherboards.loc[motherboards["id"] == motherboard_id, "size"].values[0] in \
+               eval(cases.loc[cases["id"] == case_id, "supported_motherboard_sizes"].values[0])
+    
     def psu_case_compatibility(psu_id, case_id):
-        psu_size = psus.loc[psus["id"] == psu_id, "size"].values[0]
-        case_supported_sizes = eval(cases.loc[cases["id"] == case_id, "supported_psu_sizes"].values[0])
-        return psu_size in case_supported_sizes
-
+        return psus.loc[psus["id"] == psu_id, "size"].values[0] in \
+               eval(cases.loc[cases["id"] == case_id, "supported_psu_sizes"].values[0])
+    
     def gpu_psu_compatibility(gpu_id, psu_id, safety_margin=1.2):
-        gpu_power_draw = int(gpus.loc[gpus["id"] == gpu_id, "power_draw"].values[0].replace("W", ""))
-        psu_wattage = int(psus.loc[psus["id"] == psu_id, "wattage"].values[0].replace("W", ""))
-        return gpu_power_draw * safety_margin <= psu_wattage
+        return int(gpus.loc[gpus["id"] == gpu_id, "power_draw"].values[0]) * safety_margin <= \
+               int(psus.loc[psus["id"] == psu_id, "wattage"].values[0])
 
     def budget_constraint(cpu_id, motherboard_id, ram_id, gpu_id, psu_id, case_id):
         total_cost = sum(
@@ -84,78 +81,106 @@ def interactive_pc_builder_with_solver():
             ]
         )
 
+    # Start interactive process
+    print("\n🚀 Bienvenue dans le Configurateur de PC interactif ! (Approche Solver)")
+
+    # Résolution sans contrainte budgétaire pour connaître toutes les configurations possibles
     all_solutions = problem.getSolutions()
+    print(f"\n🔎 Nombre total de configurations valides (sans contrainte budgétaire) : {len(all_solutions)}")
 
     if not all_solutions:
-        print("\nNo configurations found.")
+        print("\n❌ Aucune configuration valide trouvée.")
         return
 
+    # Trouver la configuration la moins chère
     min_cost_solution = min(all_solutions, key=calculate_cost)
     min_cost = calculate_cost(min_cost_solution)
 
-    # Display the minimum cost configuration
-    print("\nMinimum cost configuration:")
+    # Afficher la configuration minimale en coût
+    print("\n💰 **Configuration minimale en coût :**")
     for component, component_id in min_cost_solution.items():
         component_name = data[component].loc[data[component]["id"] == component_id, "name"].values[0]
         component_price = data[component].loc[data[component]["id"] == component_id, "price"].values[0]
-        print(f"{component}: {component_name} ({component_price}€)")
-    print(f"Total cost: {min_cost}€")
+        print(f"🔹 {component}: {component_name} ({component_price}€)")
+    print(f"💰 **Coût total minimum : {min_cost}€**")
 
-    # Get budget from user
+    # Demande du budget utilisateur (doit être >= min_cost)
     while True:
         try:
-            budget = int(input(f"\nEnter your maximum budget (€) (minimum {min_cost}€): "))
+            budget = int(input(f"\n💰 Entrez votre budget maximal (€) (minimum {min_cost}€) : "))
             if budget >= min_cost:
                 break
             else:
-                print(f"Budget must be at least {min_cost}€.")
+                print(f"⚠️ Le budget doit être au moins de {min_cost}€. ")
         except ValueError:
-            print("Invalid input. Please enter a numeric value.")
+            print("⚠️ Entrée invalide. Veuillez entrer un montant numérique.")
+
+    # Ajout de la contrainte budgétaire
+    def budget_constraint(cpu_id, motherboard_id, ram_id, gpu_id, psu_id, case_id):
+        return calculate_cost({
+            "CPU": cpu_id, "Motherboard": motherboard_id, "RAM": ram_id,
+            "GPU": gpu_id, "PSU": psu_id, "Case": case_id
+        }) <= budget
 
     problem.addConstraint(budget_constraint, ("CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"))
-    solutions = problem.getSolutions()
 
-    if not solutions:
-        print("\nNo configurations found within the specified budget.")
+    # Résolution avec la contrainte de budget
+    budget_solutions = problem.getSolutions()
+    print(f"\n🔎 Nombre de configurations respectant le budget : {len(budget_solutions)}")
+
+    if not budget_solutions:
+        print("\n❌ Aucune configuration valide trouvée dans le budget.")
         return
 
-    print(f"\n{len(solutions)} configurations found within the budget.")
-
-    # Interactive selection process
-    remaining_solutions = solutions
+    # Sélection interactive avec affichage de l'assistant
+    selected_config = {}
 
     for component in ["CPU", "Motherboard", "RAM", "GPU", "PSU", "Case"]:
-        available_options = set(sol[component] for sol in remaining_solutions)
+        available_options = set(sol[component] for sol in budget_solutions if all(sol[k] == v for k, v in selected_config.items()))
         available_components = data[component].loc[data[component]["id"].isin(available_options)]
 
-        print(f"\nChoose a {component}:")
+        print(f"\n🛠️ **Sélection du composant : {component}**")
+
+        if component == "CPU":
+            print("💡 Choisissez un processeur.")
+        elif component == "Motherboard":
+            print(f"💡 La carte mère doit être compatible avec le socket du CPU sélectionné : ({cpus.loc[cpus['id'] == selected_config['CPU'], 'socket'].values[0]}).")
+        elif component == "RAM":
+            print(f"💡 La RAM doit être de type : {motherboards.loc[motherboards['id'] == selected_config['Motherboard'], 'ram_type'].values[0]}.")
+        elif component == "GPU":
+            print("💡 Choisissez une carte graphique en fonction de vos besoins.")
+        elif component == "PSU":
+            print(f"💡 L'alimentation doit fournir au moins {gpus.loc[gpus['id'] == selected_config['GPU'], 'power_draw'].values[0] * 1.2}W.")
+        elif component == "Case":
+            print(f"💡 Le boîtier doit supporter une carte mère de type : {motherboards.loc[motherboards['id'] == selected_config['Motherboard'], 'size'].values[0]} "
+          f"et une alimentation de taille : {psus.loc[psus['id'] == selected_config['PSU'], 'size'].values[0]}.")
+
+
+        print("\n📌 Options disponibles :")
         for idx, row in available_components.iterrows():
-            print(f"{row['id']}: {row['name']} ({row['price']}€)")
+            print(f"{row['id']}: {row['name']} - ({row['price']}€)")
 
         while True:
             try:
-                user_choice = int(input("Enter your choice (ID): "))
+                user_choice = int(input("✏️ Entrez votre choix (ID) : "))
                 if user_choice in available_options:
-                    remaining_solutions = [sol for sol in remaining_solutions if sol[component] == user_choice]
+                    selected_config[component] = user_choice
                     break
                 else:
-                    print("Invalid ID. Please choose a valid option.")
+                    print("❌ ID invalide. Veuillez choisir une option valide.")
             except ValueError:
-                print("Invalid input. Please enter a numeric ID.")
+                print("⚠️ Entrée invalide. Veuillez entrer un ID numérique.")
 
-        if not remaining_solutions:
-            print(f"\nNo compatible solutions found after selecting {component}. Please restart.")
-            return
-
-    # Final configuration
-    print("\nYour final configuration:")
-    final_solution = remaining_solutions[0]  # There should only be one solution left
-    total_cost = calculate_cost(final_solution)
-    for component, component_id in final_solution.items():
+    print("\n✅ **Configuration finale :**")
+    total_cost = sum(data[comp].loc[data[comp]["id"] == cid, "price"].values[0] for comp, cid in selected_config.items())
+    for component, component_id in selected_config.items():
         component_name = data[component].loc[data[component]["id"] == component_id, "name"].values[0]
         component_price = data[component].loc[data[component]["id"] == component_id, "price"].values[0]
-        print(f"{component}: {component_name} ({component_price}€)")
-    print(f"Total cost: {total_cost}€")
+        print(f"🔹 {component}: {component_name} ({component_price}€)")
+    print(f"💰 **Coût total : {total_cost}€**")
+
+    # Enregistrer la configuration dans un CSV
+    save_final_configuration(selected_config, data)
 
 if __name__ == "__main__":
     interactive_pc_builder_with_solver()
