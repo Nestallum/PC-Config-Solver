@@ -1,7 +1,0 @@
-Component,id,name,capacity,cores,max_ram,power_draw,price,ram_type,size,socket,speed,supported_motherboard_sizes,supported_psu_sizes,tdp,type,wattage
-CPU,2,Intel i7-13700K,N/A,16,N/A,N/A,400,N/A,N/A,LGA1700,N/A,N/A,N/A,125.0,N/A,N/A
-Motherboard,3,Gigabyte Z790 Aorus Elite,N/A,N/A,128GB,N/A,250,DDR5,ATX,LGA1700,N/A,N/A,N/A,N/A,N/A,N/A
-RAM,4,G.Skill Z5,16GB,N/A,N/A,N/A,120,DDR5,N/A,N/A,6400MHz,N/A,N/A,N/A,N/A,N/A
-GPU,5,AMD RX 6600,N/A,N/A,N/A,132,280,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
-PSU,2,Seasonic Focus GX-850,N/A,N/A,N/A,N/A,140,N/A,ATX,N/A,N/A,N/A,N/A,N/A,N/A,850
-Case,3,Fractal Design Meshify 2 XL,N/A,N/A,N/A,N/A,150,N/A,N/A,N/A,N/A,"['E-ATX', 'ATX']",['ATX'],N/A,E-ATX,N/A
