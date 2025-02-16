@@ -1,4 +1,4 @@
 pandas
-constraint
+python-constraint
 networkx
 matplotlib
