@@ -1,6 +1,5 @@
 from constraint import Problem
 from utils import load_all_data, save_final_configuration
-import pandas as pd
 
 def interactive_pc_builder_with_solver():
     """

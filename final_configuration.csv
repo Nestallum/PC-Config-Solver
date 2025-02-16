@@ -1,0 +1,7 @@
+Component,id,name,capacity,cores,max_ram,power_draw,price,ram_type,size,socket,speed,supported_motherboard_sizes,supported_psu_sizes,tdp,type,wattage
+CPU,1,Intel i5-12400,N/A,6,N/A,N/A,200,N/A,N/A,LGA1700,N/A,N/A,N/A,65.0,N/A,N/A
+Motherboard,5,MSI B660,N/A,N/A,,N/A,120,DDR4,ATX,LGA1700,N/A,N/A,N/A,N/A,N/A,N/A
+RAM,1,Corsair Vengeance,16GB,N/A,N/A,N/A,80,DDR4,N/A,N/A,3200MHz,N/A,N/A,N/A,N/A,N/A
+GPU,5,AMD RX 6600,N/A,N/A,N/A,132,280,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+PSU,7,BeQuiet 500W,N/A,N/A,N/A,N/A,60,N/A,ATX,N/A,N/A,N/A,N/A,N/A,N/A,500
+Case,5,Corsair 4000D,N/A,N/A,N/A,N/A,90,N/A,N/A,N/A,N/A,"['ATX', 'Micro-ATX']",['ATX'],N/A,,N/A
