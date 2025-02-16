@@ -4,5 +4,5 @@ id,name,wattage,size,price
 3,Cooler Master V850 SFX,850,SFX,150
 4,Corsair SF750,750,SFX,130
 5,SilverStone SX700-LPT,700,SFX-L,160
-6,Seasonic 750W,750,,100
-7,BeQuiet 500W,500,,60
+6,Seasonic 750W,750,ATX,100
+7,BeQuiet 500W,500,ATX,60
